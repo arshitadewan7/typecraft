@@ -155,7 +155,7 @@ export default function TypecraftApp() {
   };
 
   return (
-    <>
+    <div className="app-shell">
       <header className="header">
         <div className="logo">
           <span className="logo-mark">Typecraft</span>
@@ -278,6 +278,6 @@ export default function TypecraftApp() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
