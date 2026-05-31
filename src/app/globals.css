@@ -406,6 +406,10 @@ input[type=color] {
 .social-topbar {
   display: grid;
   gap: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 12px;
 }
 .social-block {
   border: 1px solid var(--border);
@@ -413,12 +417,6 @@ input[type=color] {
   border-radius: 4px;
   padding: 12px;
 }
-.social-grid {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 12px;
-}
-.social-compose,
 .social-feed {
   border: 1px solid var(--border);
   background: var(--surface);
@@ -454,7 +452,7 @@ input[type=color] {
 }
 .social-draft,
 .social-profile {
-  margin-top: 10px;
+  margin-top: 0;
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 10px;
@@ -474,6 +472,12 @@ input[type=color] {
   border-radius: 4px;
   padding: 10px;
   background: var(--surface);
+}
+.social-preview {
+  margin-top: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  padding: 12px;
 }
 .social-card-top {
   display: flex;
@@ -522,6 +526,26 @@ input[type=color] {
 .social-muted {
   color: var(--text-muted);
   font-size: 13px;
+}
+.social-plus-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #f7f4ef;
+  font-family: var(--ui-font);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.social-plus-btn:hover {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+.social-plus-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 /* ===== VIEW TABS ===== */
@@ -728,5 +752,4 @@ input[type=color] {
   .shortcut-row { padding: 8px 12px; }
   .preview-canvas { padding: 16px; }
   .export-top { flex-direction: column; align-items: stretch; }
-  .social-grid { grid-template-columns: 1fr; }
 }
