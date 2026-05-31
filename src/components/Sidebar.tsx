@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ALL_FONTS, CURATED_PAIRINGS, THEMES, type Theme } from "@/lib/data";
 import type { TypographyState } from "@/lib/types";
 
@@ -8,7 +8,6 @@ interface SidebarProps {
   onUpdate: (patch: Partial<TypographyState>) => void;
   onRandomPairing: () => void;
   onLoadFont: (name: string) => void;
-  onFocusPreview: () => void;
   quality: {
     contrastLabel: string;
     contrastClass: string;
@@ -18,8 +17,9 @@ interface SidebarProps {
   };
 }
 
-export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, onFocusPreview, quality }: SidebarProps) {
+export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, quality }: SidebarProps) {
   const [fontQuery, setFontQuery] = useState("");
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const fontCatalog = useMemo(() => {
     const customFonts = state.customFonts.map((name) => ({ name, category: "Custom", weights: [400] }));
@@ -62,14 +62,14 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
 
   const applyTheme = (theme: Theme) => {
     onUpdate({ theme });
-    onFocusPreview();
+    sidebarRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const applyCurated = (heading: string, body: string) => {
     onLoadFont(heading);
     onLoadFont(body);
     onUpdate({ headingFont: heading, bodyFont: body });
-    onFocusPreview();
+    sidebarRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const getFontMeta = (name: string) => {
@@ -80,7 +80,7 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
   };
 
   return (
-    <div className="sidebar">
+    <div className="sidebar" ref={sidebarRef}>
       {/* Font Slots */}
       <div className="sidebar-section">
         <div className="section-label">
