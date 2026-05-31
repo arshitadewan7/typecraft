@@ -129,6 +129,24 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
     return `${f.category} · ${source}`;
   };
 
+  const activeWeight = state.activeSlot === "heading" ? state.headingWeight : state.bodyWeight;
+  const activeItalic = state.activeSlot === "heading" ? state.headingItalic : state.bodyItalic;
+
+  const setActiveWeight = (weight: number) => {
+    if (state.activeSlot === "heading") onUpdate({ headingWeight: weight });
+    else onUpdate({ bodyWeight: weight });
+  };
+
+  const toggleActiveBold = () => {
+    const isBold = activeWeight >= 700;
+    setActiveWeight(isBold ? 400 : 700);
+  };
+
+  const toggleActiveItalic = () => {
+    if (state.activeSlot === "heading") onUpdate({ headingItalic: !state.headingItalic });
+    else onUpdate({ bodyItalic: !state.bodyItalic });
+  };
+
   return (
     <div className="sidebar">
       {/* Font Slots */}
@@ -215,15 +233,31 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
           </div>
         ))}
         <div style={{ marginTop: 6 }}>
-          <div className="section-label section-label-sm">Heading Weight</div>
+          <div className="section-label section-label-sm">
+            <span>{state.activeSlot === "heading" ? "Heading" : "Body"} Style</span>
+          </div>
+          <div className="toggle-row" style={{ marginBottom: 8 }}>
+            <div
+              className={`toggle-option ${activeWeight >= 700 ? "active" : ""}`}
+              onClick={toggleActiveBold}
+            >
+              Bold
+            </div>
+            <div
+              className={`toggle-option ${activeItalic ? "active" : ""}`}
+              onClick={toggleActiveItalic}
+            >
+              Italic
+            </div>
+          </div>
           <div className="toggle-row">
-            {[400, 600, 700, 900].map((w) => (
+            {(state.activeSlot === "heading" ? [400, 500, 600, 700, 900] : [400, 500, 600, 700]).map((w) => (
               <div
                 key={w}
-                className={`toggle-option ${state.headingWeight === w ? "active" : ""}`}
-                onClick={() => onUpdate({ headingWeight: w })}
+                className={`toggle-option ${activeWeight === w ? "active" : ""}`}
+                onClick={() => setActiveWeight(w)}
               >
-                {w === 400 ? "Reg" : w === 600 ? "Semi" : w === 700 ? "Bold" : "Black"}
+                {w}
               </div>
             ))}
           </div>

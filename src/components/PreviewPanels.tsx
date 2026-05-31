@@ -21,13 +21,13 @@ export function SpecimenPanel({ state }: PanelProps) {
           <span>{state.headingFont}</span>
         </div>
         <div className="specimen-body" style={{ background: bg, color: text }}>
-          <div style={{ fontFamily: hf, fontSize: state.headingSize, fontWeight: state.headingWeight, letterSpacing: state.headingSpacing, lineHeight: 1.1, marginBottom: 20 }}>
+          <div style={{ fontFamily: hf, fontSize: state.headingSize, fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal", letterSpacing: state.headingSpacing, lineHeight: 1.1, marginBottom: 20 }}>
             The Art of Perfect Typography
           </div>
-          <div style={{ fontFamily: hf, fontSize: 28, fontWeight: 600, lineHeight: 1.3, marginBottom: 16 }}>
+          <div style={{ fontFamily: hf, fontSize: 28, fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal", lineHeight: 1.3, marginBottom: 16 }}>
             Every letter tells a story worth reading
           </div>
-          <div style={{ fontFamily: hf, fontSize: 64, fontWeight: 900, letterSpacing: -2, opacity: 0.15, lineHeight: 1 }}>
+          <div style={{ fontFamily: hf, fontSize: 64, fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal", letterSpacing: -2, opacity: 0.15, lineHeight: 1 }}>
             Aa Bb Cc
           </div>
           <div style={{ marginTop: 8 }}>
@@ -44,10 +44,10 @@ export function SpecimenPanel({ state }: PanelProps) {
           <span>{state.bodyFont}</span>
         </div>
         <div className="specimen-body" style={{ background: bg, color: text }}>
-          <div style={{ fontFamily: bf, fontSize: state.bodySize, lineHeight: state.lineHeight, marginBottom: 12 }}>
+          <div style={{ fontFamily: bf, fontSize: state.bodySize, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal", lineHeight: state.lineHeight, marginBottom: 12 }}>
             Great typography is invisible. It serves the reader without calling attention to itself — each letterform chosen not for novelty, but for clarity. The right pairing of a display font with a workhorse body creates harmony between personality and function.
           </div>
-          <div style={{ fontFamily: bf, fontSize: 12, lineHeight: 1.6, opacity: 0.6, fontStyle: "italic" }}>
+          <div style={{ fontFamily: bf, fontSize: 12, fontWeight: state.bodyWeight, lineHeight: 1.6, opacity: 0.6, fontStyle: state.bodyItalic ? "italic" : "normal" }}>
             Caption text at 12px — Perfect for footnotes, labels, and supporting information.
           </div>
         </div>
@@ -58,13 +58,13 @@ export function SpecimenPanel({ state }: PanelProps) {
           <span>PAIRING IN CONTEXT</span>
         </div>
         <div className="specimen-body" style={{ background: bg, color: text }}>
-          <div style={{ fontFamily: hf, fontSize: 36, fontWeight: state.headingWeight, marginBottom: 8 }}>
+          <div style={{ fontFamily: hf, fontSize: 36, fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal", marginBottom: 8 }}>
             Design Systems for Modern Brands
           </div>
-          <div style={{ fontFamily: bf, fontSize: 14, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", opacity: 0.5, marginBottom: 20 }}>
+          <div style={{ fontFamily: bf, fontSize: 14, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal", letterSpacing: 3, textTransform: "uppercase", opacity: 0.5, marginBottom: 20 }}>
             Visual Language · Brand Identity
           </div>
-          <div style={{ fontFamily: bf, fontSize: 15, lineHeight: state.lineHeight, maxWidth: 620 }}>
+          <div style={{ fontFamily: bf, fontSize: 15, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal", lineHeight: state.lineHeight, maxWidth: 620 }}>
             A well-crafted design system is the foundation of any enduring brand. It establishes a shared visual language — consistent use of type, color, and space — that allows teams to communicate with clarity, move with speed, and maintain coherence across every touchpoint.
           </div>
         </div>
@@ -91,20 +91,20 @@ export function LandingPanel({ state }: PanelProps) {
       </div>
       <div style={{ background: bg, color: text }}>
         <div className="mock-nav">
-          <div className="mock-nav-logo" style={{ fontFamily: hf }}>Luminary</div>
-          <div className="mock-nav-links" style={{ fontFamily: bf }}>
+          <div className="mock-nav-logo" style={{ fontFamily: hf, fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal" }}>Luminary</div>
+          <div className="mock-nav-links" style={{ fontFamily: bf, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal" }}>
             <span>About</span><span>Work</span><span>Pricing</span><span>Contact</span>
           </div>
         </div>
         <div className="mock-hero">
-          <div className="mock-hero-tag" style={{ fontFamily: bf }}>Design Studio</div>
-          <div className="mock-hero-title" style={{ fontFamily: hf, fontSize: Math.min(state.headingSize * 0.9, 56), fontWeight: state.headingWeight, letterSpacing: state.headingSpacing }}>
+          <div className="mock-hero-tag" style={{ fontFamily: bf, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal" }}>Design Studio</div>
+          <div className="mock-hero-title" style={{ fontFamily: hf, fontSize: Math.min(state.headingSize * 0.9, 56), fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal", letterSpacing: state.headingSpacing }}>
             We craft brands<br />that endure.
           </div>
-          <div className="mock-hero-sub" style={{ fontFamily: bf, fontSize: state.bodySize }}>
+          <div className="mock-hero-sub" style={{ fontFamily: bf, fontSize: state.bodySize, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal" }}>
             Strategic design for ambitious companies. We partner with founders and teams who believe in the power of beautiful, intentional work.
           </div>
-          <button className="mock-cta" style={{ background: accent, color: bg, fontFamily: bf }}>
+          <button className="mock-cta" style={{ background: accent, color: bg, fontFamily: bf, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal" }}>
             Start a Project →
           </button>
         </div>
@@ -116,8 +116,8 @@ export function LandingPanel({ state }: PanelProps) {
           ].map((feat) => (
             <div className="mock-feature" key={feat.title}>
               <div className="mock-feature-icon">{feat.icon}</div>
-              <div className="mock-feature-title" style={{ fontFamily: hf }}>{feat.title}</div>
-              <div className="mock-feature-text" style={{ fontFamily: bf }}>{feat.text}</div>
+              <div className="mock-feature-title" style={{ fontFamily: hf, fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal" }}>{feat.title}</div>
+              <div className="mock-feature-text" style={{ fontFamily: bf, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal" }}>{feat.text}</div>
             </div>
           ))}
         </div>
@@ -144,15 +144,15 @@ export function CardPanel({ state }: PanelProps) {
       <div className="card-showcase fade-in">
         <div className="business-card" style={{ background: bg, color: text, border: `2px solid ${accent}30` }}>
           <div>
-            <div className="card-name" style={{ fontFamily: hf, fontWeight: state.headingWeight }}>{cardName}</div>
-            <div className="card-title" style={{ fontFamily: bf }}>{cardTitle}</div>
+            <div className="card-name" style={{ fontFamily: hf, fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal" }}>{cardName}</div>
+            <div className="card-title" style={{ fontFamily: bf, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal" }}>{cardTitle}</div>
           </div>
-          <div className="card-contact" style={{ fontFamily: bf }}>
+          <div className="card-contact" style={{ fontFamily: bf, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal" }}>
             {cardEmail}<br />+1 (415) 000 1234<br />luminary.co
           </div>
         </div>
         <div className="business-card" style={{ background: accent, color: bg, alignItems: "flex-end", justifyContent: "flex-end" }}>
-          <div className="card-brand" style={{ fontFamily: hf, fontWeight: state.headingWeight }}>{cardBrand}</div>
+          <div className="card-brand" style={{ fontFamily: hf, fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal" }}>{cardBrand}</div>
         </div>
       </div>
 
@@ -194,13 +194,13 @@ export function CombosPanel({ state }: PanelProps) {
       {COLOR_COMBOS.map((c) => (
         <div className="color-combo" key={c.label}>
           <div className="color-combo-preview" style={{ background: c.bg, color: c.text }}>
-            <div style={{ fontFamily: hf, fontSize: Math.min(state.headingSize * 0.6, 32), fontWeight: state.headingWeight, letterSpacing: state.headingSpacing, marginBottom: 8 }}>
+            <div style={{ fontFamily: hf, fontSize: Math.min(state.headingSize * 0.6, 32), fontWeight: state.headingWeight, fontStyle: state.headingItalic ? "italic" : "normal", letterSpacing: state.headingSpacing, marginBottom: 8 }}>
               Design Studio
             </div>
-            <div style={{ fontFamily: bf, fontSize: state.bodySize, lineHeight: state.lineHeight, opacity: 0.75 }}>
+            <div style={{ fontFamily: bf, fontSize: state.bodySize, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal", lineHeight: state.lineHeight, opacity: 0.75 }}>
               Crafting beautiful experiences for ambitious brands.
             </div>
-            <div style={{ display: "inline-block", marginTop: 12, background: c.accent, color: c.bg, padding: "6px 16px", borderRadius: 4, fontFamily: bf, fontSize: 12, fontWeight: 600 }}>
+            <div style={{ display: "inline-block", marginTop: 12, background: c.accent, color: c.bg, padding: "6px 16px", borderRadius: 4, fontFamily: bf, fontSize: 12, fontWeight: state.bodyWeight, fontStyle: state.bodyItalic ? "italic" : "normal" }}>
               Get Started
             </div>
           </div>
