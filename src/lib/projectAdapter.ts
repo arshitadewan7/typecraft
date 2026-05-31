@@ -8,8 +8,8 @@ import {
 } from "@/lib/types";
 
 export const DEFAULT_TYPOGRAPHY_STATE: TypographyState = {
-  headingFont: "Playfair Display",
-  bodyFont: "DM Sans",
+  headingFont: "Garamond Premier Roman",
+  bodyFont: "Garamond Premier Roman",
   headingSize: 52,
   bodySize: 16,
   headingSpacing: -1,
