@@ -313,6 +313,67 @@ input[type=color] {
 .curated-names { margin-top: 8px; font-size: 10px; font-family: var(--ui-font); color: var(--text-dim); display: flex; gap: 6px; flex-wrap: wrap; }
 .curated-pill { background: var(--surface2); padding: 2px 7px; border-radius: 2px; color: var(--text-muted); }
 
+.font-identify-zone {
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--surface);
+}
+.font-identify-zone:hover,
+.font-identify-zone.dragging {
+  border-color: var(--accent);
+  background: var(--surface2);
+}
+.font-identify-title {
+  font-size: 13px;
+  color: var(--text);
+}
+.font-identify-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.font-identify-status {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.font-identify-error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--red);
+}
+.font-identify-results {
+  margin-top: 10px;
+  display: grid;
+  gap: 6px;
+}
+.font-identify-text {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.font-identify-result {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--ui-font);
+  font-size: 12px;
+}
+.font-identify-result:hover {
+  border-color: var(--accent);
+  background: var(--surface2);
+}
+
 /* ===== VIEW TABS ===== */
 .view-tabs {
   display: flex;

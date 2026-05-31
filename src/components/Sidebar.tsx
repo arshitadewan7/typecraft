@@ -1,6 +1,7 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ALL_FONTS, CURATED_PAIRINGS, THEMES, type Theme } from "@/lib/data";
+import { identifyFontsFromImage, type FontIdentificationResult } from "@/lib/fontIdentifier";
 import type { TypographyState } from "@/lib/types";
 
 interface SidebarProps {
@@ -19,6 +20,11 @@ interface SidebarProps {
 
 export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, quality }: SidebarProps) {
   const [fontQuery, setFontQuery] = useState("");
+  const [draggingIdentify, setDraggingIdentify] = useState(false);
+  const [identifyLoading, setIdentifyLoading] = useState(false);
+  const [identifyError, setIdentifyError] = useState<string | null>(null);
+  const [identifyResult, setIdentifyResult] = useState<FontIdentificationResult | null>(null);
+  const identifyInputRef = useRef<HTMLInputElement>(null);
 
   const fontCatalog = useMemo(() => {
     const customFonts = state.customFonts.map((name) => ({ name, category: "Custom", weights: [400] }));
@@ -67,6 +73,53 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
     onLoadFont(heading);
     onLoadFont(body);
     onUpdate({ headingFont: heading, bodyFont: body });
+  };
+
+  const applyIdentifiedFont = (name: string) => {
+    onLoadFont(name);
+    if (state.activeSlot === "heading") onUpdate({ headingFont: name });
+    else onUpdate({ bodyFont: name });
+  };
+
+  const runIdentifier = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setIdentifyError("Please upload an image file.");
+      return;
+    }
+    setIdentifyLoading(true);
+    setIdentifyError(null);
+    try {
+      const result = await identifyFontsFromImage(file);
+      setIdentifyResult(result);
+    } catch (error) {
+      setIdentifyResult(null);
+      setIdentifyError(error instanceof Error ? error.message : "Unable to identify font.");
+    } finally {
+      setIdentifyLoading(false);
+    }
+  };
+
+  const onIdentifyDrop: React.DragEventHandler<HTMLDivElement> = async (e) => {
+    e.preventDefault();
+    setDraggingIdentify(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) await runIdentifier(file);
+  };
+
+  const onIdentifyDragOver: React.DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault();
+    setDraggingIdentify(true);
+  };
+
+  const onIdentifyDragLeave: React.DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault();
+    setDraggingIdentify(false);
+  };
+
+  const onIdentifyUpload: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) await runIdentifier(file);
+    e.target.value = "";
   };
 
   const getFontMeta = (name: string) => {
@@ -233,6 +286,51 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="sidebar-section">
+        <div className="section-label">Identify Font</div>
+        <div
+          className={`font-identify-zone ${draggingIdentify ? "dragging" : ""}`}
+          onDrop={onIdentifyDrop}
+          onDragOver={onIdentifyDragOver}
+          onDragLeave={onIdentifyDragLeave}
+          onClick={() => identifyInputRef.current?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") identifyInputRef.current?.click();
+          }}
+        >
+          <input
+            ref={identifyInputRef}
+            type="file"
+            accept="image/*"
+            onChange={onIdentifyUpload}
+            style={{ display: "none" }}
+          />
+          <div className="font-identify-title">Drop image here or click to upload</div>
+          <div className="font-identify-hint">Best results with high-contrast text lines</div>
+        </div>
+
+        {identifyLoading && <div className="font-identify-status">Identifying font...</div>}
+        {identifyError && <div className="font-identify-error">{identifyError}</div>}
+        {identifyResult && (
+          <div className="font-identify-results">
+            <div className="font-identify-text">Detected text: {identifyResult.extractedText}</div>
+            {identifyResult.matches.map((match) => (
+              <button
+                key={match.fontName}
+                type="button"
+                className="font-identify-result"
+                onClick={() => applyIdentifiedFont(match.fontName)}
+              >
+                <span style={{ fontFamily: `'${match.fontName}', serif` }}>{match.fontName}</span>
+                <span>{match.confidence}%</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="sidebar-section">
