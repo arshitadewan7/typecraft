@@ -16,6 +16,9 @@ export type TypographyState = {
   headingSpacing: number;
   lineHeight: number;
   headingWeight: number;
+  bodyWeight: number;
+  headingItalic: boolean;
+  bodyItalic: boolean;
   theme: Theme;
   activeSlot: ActiveSlot;
   currentView: CurrentView;
@@ -30,6 +33,9 @@ export type ProjectSnapshot = {
   headingSpacing: number;
   lineHeight: number;
   headingWeight: number;
+  bodyWeight: number;
+  headingItalic: boolean;
+  bodyItalic: boolean;
   theme: Theme;
   currentView: CurrentView;
   customFonts: string[];

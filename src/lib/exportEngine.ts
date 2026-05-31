@@ -8,6 +8,9 @@ type ExportTokens = {
     headingSpacing: string;
     lineHeight: number;
     headingWeight: number;
+    bodyWeight: number;
+    headingStyle: "normal" | "italic";
+    bodyStyle: "normal" | "italic";
   };
   color: {
     bg: string;
@@ -48,10 +51,13 @@ export function generateExport(project: ProjectV1, profile: ExportProfile): stri
       `  font-size: ${tokens.typography.headingSize};`,
       `  letter-spacing: ${tokens.typography.headingSpacing};`,
       `  font-weight: ${tokens.typography.headingWeight};`,
+      `  font-style: ${tokens.typography.headingStyle};`,
       "}",
       ".tc-body {",
       `  font-family: ${tokens.font.body}, ${tokens.font.bodyFallback};`,
       `  font-size: ${tokens.typography.bodySize};`,
+      `  font-weight: ${tokens.typography.bodyWeight};`,
+      `  font-style: ${tokens.typography.bodyStyle};`,
       `  line-height: ${tokens.typography.lineHeight};`,
       "}",
       ".tc-theme {",
@@ -74,6 +80,9 @@ export function generateExport(project: ProjectV1, profile: ExportProfile): stri
     `  --tc-typography-heading-spacing: ${tokens.typography.headingSpacing};`,
     `  --tc-typography-line-height: ${tokens.typography.lineHeight};`,
     `  --tc-typography-heading-weight: ${tokens.typography.headingWeight};`,
+    `  --tc-typography-body-weight: ${tokens.typography.bodyWeight};`,
+    `  --tc-typography-heading-style: ${tokens.typography.headingStyle};`,
+    `  --tc-typography-body-style: ${tokens.typography.bodyStyle};`,
     `  --tc-color-bg: ${tokens.color.bg};`,
     `  --tc-color-text: ${tokens.color.text};`,
     `  --tc-color-accent: ${tokens.color.accent};`,
@@ -157,6 +166,9 @@ function getTokens(project: ProjectV1): ExportTokens {
       headingSpacing: `${snapshot.headingSpacing}px`,
       lineHeight: snapshot.lineHeight,
       headingWeight: snapshot.headingWeight,
+      bodyWeight: snapshot.bodyWeight,
+      headingStyle: snapshot.headingItalic ? "italic" : "normal",
+      bodyStyle: snapshot.bodyItalic ? "italic" : "normal",
     },
     color: {
       bg: snapshot.theme.bg,
