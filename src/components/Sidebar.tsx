@@ -129,21 +129,22 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
     return `${f.category} · ${source}`;
   };
 
-  const activeWeight = state.activeSlot === "heading" ? state.headingWeight : state.bodyWeight;
-  const activeItalic = state.activeSlot === "heading" ? state.headingItalic : state.bodyItalic;
-
-  const setActiveWeight = (weight: number) => {
-    if (state.activeSlot === "heading") onUpdate({ headingWeight: weight });
-    else onUpdate({ bodyWeight: weight });
+  const getWeight = (slot: "heading" | "body") => {
+    return slot === "heading" ? state.headingWeight : state.bodyWeight;
   };
 
-  const toggleActiveBold = () => {
-    const isBold = activeWeight >= 700;
-    setActiveWeight(isBold ? 400 : 700);
+  const getItalic = (slot: "heading" | "body") => {
+    return slot === "heading" ? state.headingItalic : state.bodyItalic;
   };
 
-  const toggleActiveItalic = () => {
-    if (state.activeSlot === "heading") onUpdate({ headingItalic: !state.headingItalic });
+  const toggleBold = (slot: "heading" | "body") => {
+    const isBold = getWeight(slot) >= 700;
+    if (slot === "heading") onUpdate({ headingWeight: isBold ? 400 : 700 });
+    else onUpdate({ bodyWeight: isBold ? 400 : 700 });
+  };
+
+  const toggleItalic = (slot: "heading" | "body") => {
+    if (slot === "heading") onUpdate({ headingItalic: !state.headingItalic });
     else onUpdate({ bodyItalic: !state.bodyItalic });
   };
 
@@ -162,6 +163,28 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
           <div className="font-slot-role">Heading</div>
           <div className="font-slot-name">{state.headingFont}</div>
           <div className="font-slot-meta">{getFontMeta(state.headingFont)}</div>
+          <div className="slot-style-row">
+            <button
+              type="button"
+              className={`slot-style-btn ${state.headingWeight >= 700 ? "active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBold("heading");
+              }}
+            >
+              Bold
+            </button>
+            <button
+              type="button"
+              className={`slot-style-btn ${state.headingItalic ? "active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleItalic("heading");
+              }}
+            >
+              Italic
+            </button>
+          </div>
         </div>
         <div className="between-fonts">paired with</div>
         <div
@@ -171,6 +194,28 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
           <div className="font-slot-role">Body</div>
           <div className="font-slot-name">{state.bodyFont}</div>
           <div className="font-slot-meta">{getFontMeta(state.bodyFont)}</div>
+          <div className="slot-style-row">
+            <button
+              type="button"
+              className={`slot-style-btn ${state.bodyWeight >= 700 ? "active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBold("body");
+              }}
+            >
+              Bold
+            </button>
+            <button
+              type="button"
+              className={`slot-style-btn ${state.bodyItalic ? "active" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleItalic("body");
+              }}
+            >
+              Italic
+            </button>
+          </div>
         </div>
         <button className="random-btn" onClick={handleRandom}>↺ Random Pairing</button>
       </div>
@@ -232,36 +277,6 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
             />
           </div>
         ))}
-        <div style={{ marginTop: 6 }}>
-          <div className="section-label section-label-sm">
-            <span>{state.activeSlot === "heading" ? "Heading" : "Body"} Style</span>
-          </div>
-          <div className="toggle-row" style={{ marginBottom: 8 }}>
-            <div
-              className={`toggle-option ${activeWeight >= 700 ? "active" : ""}`}
-              onClick={toggleActiveBold}
-            >
-              Bold
-            </div>
-            <div
-              className={`toggle-option ${activeItalic ? "active" : ""}`}
-              onClick={toggleActiveItalic}
-            >
-              Italic
-            </div>
-          </div>
-          <div className="toggle-row">
-            {(state.activeSlot === "heading" ? [400, 500, 600, 700, 900] : [400, 500, 600, 700]).map((w) => (
-              <div
-                key={w}
-                className={`toggle-option ${activeWeight === w ? "active" : ""}`}
-                onClick={() => setActiveWeight(w)}
-              >
-                {w}
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Color Themes */}
