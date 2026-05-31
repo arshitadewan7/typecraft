@@ -13,6 +13,7 @@ export const GOOGLE_FONTS = [
   { name: "Bebas Neue", category: "Display", weights: [400] },
   { name: "Anton", category: "Display", weights: [400] },
   { name: "Oswald", category: "Sans-Serif", weights: [200, 300, 400, 500, 600, 700] },
+  { name: "Lato", category: "Sans-Serif", weights: [100, 300, 400, 700, 900] },
   { name: "Raleway", category: "Sans-Serif", weights: [100, 200, 300, 400, 500, 600, 700, 800, 900] },
   { name: "Montserrat", category: "Sans-Serif", weights: [100, 200, 300, 400, 500, 600, 700, 800, 900] },
   { name: "Poppins", category: "Sans-Serif", weights: [100, 200, 300, 400, 500, 600, 700, 800, 900] },
