@@ -1,22 +1,36 @@
 "use client";
 import { useState, useMemo } from "react";
 import { ALL_FONTS, CURATED_PAIRINGS, THEMES, type Theme } from "@/lib/data";
-import type { TypographyState } from "@/lib/useTypecraftStore";
+import type { TypographyState } from "@/lib/types";
 
 interface SidebarProps {
   state: TypographyState;
   onUpdate: (patch: Partial<TypographyState>) => void;
-  onRandomPairing: () => { headingFont: string; bodyFont: string };
+  onRandomPairing: () => void;
   onLoadFont: (name: string) => void;
+  quality: {
+    contrastLabel: string;
+    contrastClass: string;
+    scaleLabel: string;
+    scaleClass: string;
+    warnings: string[];
+  };
 }
 
-export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont }: SidebarProps) {
+export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, quality }: SidebarProps) {
   const [fontQuery, setFontQuery] = useState("");
+
+  const fontCatalog = useMemo(() => {
+    const customFonts = state.customFonts.map((name) => ({ name, category: "Custom", weights: [400] }));
+    const map = new Map<string, { name: string; category: string; weights: number[] }>();
+    for (const font of [...ALL_FONTS, ...customFonts]) map.set(font.name, font);
+    return Array.from(map.values());
+  }, [state.customFonts]);
 
   const filteredFonts = useMemo(() => {
     const q = fontQuery.toLowerCase();
-    return ALL_FONTS.filter((f) => f.name.toLowerCase().includes(q)).slice(0, 50);
-  }, [fontQuery]);
+    return fontCatalog.filter((f) => f.name.toLowerCase().includes(q)).slice(0, 60);
+  }, [fontCatalog, fontQuery]);
 
   const selectFont = (name: string) => {
     onLoadFont(name);
@@ -25,9 +39,7 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont }
   };
 
   const handleRandom = () => {
-    const { headingFont, bodyFont } = onRandomPairing();
-    onLoadFont(headingFont);
-    onLoadFont(bodyFont);
+    onRandomPairing();
   };
 
   const handleCustomFont = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,8 +51,10 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont }
       const style = document.createElement("style");
       style.textContent = `@font-face { font-family: "${name}"; src: url("${ev.target?.result}"); }`;
       document.head.appendChild(style);
-      if (state.activeSlot === "heading") onUpdate({ headingFont: name });
-      else onUpdate({ bodyFont: name });
+      const nextCustomFonts = state.customFonts.includes(name) ? state.customFonts : [...state.customFonts, name];
+      if (state.activeSlot === "heading") onUpdate({ headingFont: name, customFonts: nextCustomFonts });
+      else onUpdate({ bodyFont: name, customFonts: nextCustomFonts });
+      onLoadFont(name);
     };
     reader.readAsDataURL(file);
   };
@@ -56,7 +70,7 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont }
   };
 
   const getFontMeta = (name: string) => {
-    const f = ALL_FONTS.find((x) => x.name === name);
+    const f = fontCatalog.find((x) => x.name === name);
     if (!f) return "Custom";
     const source = f.category.startsWith("System") ? "System" : f.category === "Custom" ? "Custom" : "Google Fonts";
     return `${f.category} · ${source}`;
@@ -217,6 +231,32 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont }
                 <span className="curated-pill">{p.body.split(" ")[0]}</span>
               </div>
             </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="sidebar-section">
+        <div className="section-label">Quality Checks</div>
+        <div style={{ display: "grid", gap: 8 }}>
+          <span className="contrast-badge">
+            <span className={`contrast-dot ${quality.contrastClass}`} />
+            <span>{quality.contrastLabel}</span>
+          </span>
+          <span className="contrast-badge">
+            <span className={`contrast-dot ${quality.scaleClass}`} />
+            <span>{quality.scaleLabel}</span>
+          </span>
+          {quality.warnings.length === 0 && (
+            <span className="contrast-badge">
+              <span className="contrast-dot contrast-pass" />
+              <span>Font coverage OK</span>
+            </span>
+          )}
+          {quality.warnings.map((warning) => (
+            <span className="contrast-badge" key={warning}>
+              <span className="contrast-dot contrast-warn" />
+              <span>{warning}</span>
+            </span>
           ))}
         </div>
       </div>

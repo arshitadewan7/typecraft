@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { COLOR_COMBOS } from "@/lib/data";
-import type { TypographyState } from "@/lib/useTypecraftStore";
+import type { TypographyState } from "@/lib/types";
 
 type PanelProps = { state: TypographyState };
 

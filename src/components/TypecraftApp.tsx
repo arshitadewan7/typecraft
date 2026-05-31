@@ -1,8 +1,10 @@
 "use client";
-import { useEffect } from "react";
-import { contrastRatio } from "@/lib/data";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ALL_FONTS, contrastRatio } from "@/lib/data";
+import { generateExport, validateProject } from "@/lib/exportEngine";
 import { useTypecraftStore } from "@/lib/useTypecraftStore";
 import { useFontLoader } from "@/lib/useFontLoader";
+import type { ExportProfile } from "@/lib/types";
 import Sidebar from "@/components/Sidebar";
 import { SpecimenPanel, LandingPanel, CardPanel, CombosPanel } from "@/components/PreviewPanels";
 
@@ -13,120 +15,261 @@ const VIEWS = [
   { id: "combos", label: "Color Combos" },
 ] as const;
 
-export default function TypecraftApp() {
-  const { state, update, randomPairing } = useTypecraftStore();
-  const { loadFont } = useFontLoader();
+const EXPORT_PROFILES: Array<{ id: ExportProfile; label: string }> = [
+  { id: "css-vars", label: "CSS Variables" },
+  { id: "tokens-json", label: "Tokens JSON" },
+  { id: "css-classes", label: "CSS Classes" },
+];
 
-  // Load initial fonts
+export default function TypecraftApp() {
+  const {
+    state,
+    update,
+    randomPairing,
+    projects,
+    currentProjectId,
+    currentProjectName,
+    saveStatus,
+    error,
+    currentProject,
+    clearError,
+    openProject,
+    createNewProject,
+    renameCurrentProject,
+    duplicateCurrentProject,
+    deleteCurrentProject,
+    saveCurrentProject,
+    exportCurrentProject,
+    importProjectFromText,
+    hydrated,
+  } = useTypecraftStore();
+
+  const { loadFont } = useFontLoader();
+  const [exportProfile, setExportProfile] = useState<ExportProfile>("css-vars");
+  const [showExportPanel, setShowExportPanel] = useState(false);
+  const importProjectRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
+    if (!hydrated) return;
     loadFont(state.headingFont);
     loadFont(state.bodyFont);
-  }, []);
+  }, [hydrated, loadFont, state.bodyFont, state.headingFont]);
 
-  const getContrastInfo = () => {
-    try {
-      const ratio = contrastRatio(state.theme.bg, state.theme.text);
-      if (ratio >= 7) return { cls: "contrast-pass", label: `AAA ${ratio.toFixed(1)}:1` };
-      if (ratio >= 4.5) return { cls: "contrast-pass", label: `AA ${ratio.toFixed(1)}:1` };
-      if (ratio >= 3) return { cls: "contrast-warn", label: `AA Large ${ratio.toFixed(1)}:1` };
-      return { cls: "contrast-fail", label: `Fail ${ratio.toFixed(1)}:1` };
-    } catch { return { cls: "contrast-warn", label: "?" }; }
+  const handleRandomPairing = () => {
+    const { headingFont, bodyFont } = randomPairing();
+    loadFont(headingFont);
+    loadFont(bodyFont);
   };
 
-  const contrast = getContrastInfo();
-
-  const copyCSS = async () => {
-    const css = `/* Typecraft Export */
-:root {
-  --heading-font: '${state.headingFont}', serif;
-  --body-font: '${state.bodyFont}', sans-serif;
-  --heading-size: ${state.headingSize}px;
-  --body-size: ${state.bodySize}px;
-  --heading-spacing: ${state.headingSpacing}px;
-  --line-height: ${state.lineHeight};
-  --heading-weight: ${state.headingWeight};
-  --color-bg: ${state.theme.bg};
-  --color-text: ${state.theme.text};
-  --color-accent: ${state.theme.accent};
-  --color-secondary: ${state.theme.secondary};
-}
-
-h1, h2, h3 {
-  font-family: var(--heading-font);
-  font-weight: var(--heading-weight);
-  letter-spacing: var(--heading-spacing);
-}
-
-body, p {
-  font-family: var(--body-font);
-  font-size: var(--body-size);
-  line-height: var(--line-height);
-}`;
-    await navigator.clipboard.writeText(css);
-  };
-
-  const exportConfig = () => {
-    const config = {
-      fonts: { heading: state.headingFont, body: state.bodyFont },
-      typography: {
-        headingSize: state.headingSize,
-        bodySize: state.bodySize,
-        headingSpacing: state.headingSpacing,
-        lineHeight: state.lineHeight,
-        headingWeight: state.headingWeight,
-      },
-      colors: state.theme,
-      googleFontsUrl: `https://fonts.googleapis.com/css2?family=${encodeURIComponent(state.headingFont)}:wght@400;700;900&family=${encodeURIComponent(state.bodyFont)}:wght@400;500;700&display=swap`,
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      const key = e.key.toLowerCase();
+      if (key === "s") {
+        e.preventDefault();
+        saveCurrentProject();
+      } else if (key === "n") {
+        e.preventDefault();
+        createNewProject();
+      } else if (key === "e") {
+        e.preventDefault();
+        setShowExportPanel((prev) => !prev);
+      } else if (key === "o") {
+        e.preventDefault();
+        importProjectRef.current?.click();
+      } else if (key === "r") {
+        e.preventDefault();
+        handleRandomPairing();
+      }
     };
-    const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "typecraft-config.json";
-    a.click();
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [createNewProject, saveCurrentProject]);
+
+  const quality = useMemo(() => {
+    const ratio = contrastRatio(state.theme.bg, state.theme.text);
+    const contrastLabel = ratio >= 7 ? `Contrast AAA ${ratio.toFixed(1)}:1` : ratio >= 4.5 ? `Contrast AA ${ratio.toFixed(1)}:1` : `Contrast Low ${ratio.toFixed(1)}:1`;
+    const contrastClass = ratio >= 4.5 ? "contrast-pass" : ratio >= 3 ? "contrast-warn" : "contrast-fail";
+
+    const scaleRatio = state.headingSize / Math.max(state.bodySize, 1);
+    const scaleLabel = scaleRatio >= 1.8 ? `Scale Good ${scaleRatio.toFixed(2)}x` : scaleRatio >= 1.4 ? `Scale Moderate ${scaleRatio.toFixed(2)}x` : `Scale Tight ${scaleRatio.toFixed(2)}x`;
+    const scaleClass = scaleRatio >= 1.8 ? "contrast-pass" : scaleRatio >= 1.4 ? "contrast-warn" : "contrast-fail";
+
+    const knownFonts = new Set([...ALL_FONTS.map((f) => f.name), ...state.customFonts]);
+    const warnings: string[] = [];
+    if (!knownFonts.has(state.headingFont)) warnings.push(`Unknown heading font: ${state.headingFont}`);
+    if (!knownFonts.has(state.bodyFont)) warnings.push(`Unknown body font: ${state.bodyFont}`);
+
+    return { contrastLabel, contrastClass, scaleLabel, scaleClass, warnings };
+  }, [state]);
+
+  const exportIssues = useMemo(() => (currentProject ? validateProject(currentProject) : []), [currentProject]);
+  const hasExportError = exportIssues.some((issue) => issue.level === "error");
+  const exportPreview = useMemo(() => {
+    if (!currentProject) return "";
+    return generateExport(currentProject, exportProfile);
+  }, [currentProject, exportProfile]);
+
+  const copyExport = async () => {
+    if (hasExportError || !exportPreview) return;
+    try {
+      await navigator.clipboard.writeText(exportPreview);
+    } catch {
+      // clipboard errors are surfaced as a global banner for consistency
+    }
+  };
+
+  const downloadText = (filename: string, content: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType });
+    const anchor = document.createElement("a");
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(anchor.href);
+  };
+
+  const downloadExport = () => {
+    if (!exportPreview || hasExportError) return;
+    const extension = exportProfile === "tokens-json" ? "json" : "css";
+    const mime = exportProfile === "tokens-json" ? "application/json" : "text/css";
+    downloadText(`typecraft-${exportProfile}.${extension}`, exportPreview, mime);
+  };
+
+  const downloadProjectJson = () => {
+    const json = exportCurrentProject();
+    if (!json) return;
+    downloadText("typecraft-project.json", json, "application/json");
+  };
+
+  const handleImportProject: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = String(event.target?.result || "");
+      importProjectFromText(text);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   };
 
   return (
     <>
-      {/* HEADER */}
       <header className="header">
         <div className="logo">
           <span className="logo-mark">Typecraft</span>
-          <span className="logo-sub">Font Pairing Studio</span>
+          <span className="logo-sub">Production Typography Workspace</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <input
+            className="font-search"
+            style={{ width: 220 }}
+            value={currentProjectName}
+            onChange={(e) => renameCurrentProject(e.target.value)}
+            aria-label="Project name"
+          />
+          <select
+            className="font-search"
+            style={{ width: 170 }}
+            value={currentProjectId}
+            onChange={(e) => openProject(e.target.value)}
+            aria-label="Recent projects"
+          >
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+          <span className="contrast-badge">
+            <span className={`contrast-dot ${saveStatus === "saved" ? "contrast-pass" : saveStatus === "autosaved" ? "contrast-warn" : "contrast-fail"}`} />
+            <span>{saveStatus.toUpperCase()}</span>
+          </span>
         </div>
         <div className="header-actions">
-          <span className="contrast-badge">
-            <span className={`contrast-dot ${contrast.cls}`} />
-            <span>{contrast.label}</span>
-          </span>
-          <button className="btn" onClick={copyCSS}>Copy CSS</button>
-          <button className="btn primary" onClick={exportConfig}>Export Config</button>
+          <button className="btn" onClick={createNewProject}>New</button>
+          <button className="btn" onClick={duplicateCurrentProject}>Duplicate</button>
+          <button className="btn" onClick={deleteCurrentProject}>Delete</button>
+          <button className="btn" onClick={saveCurrentProject}>Save</button>
+          <button className="btn" onClick={downloadProjectJson}>Export Project</button>
+          <button className="btn" onClick={() => importProjectRef.current?.click()}>Import Project</button>
+          <input ref={importProjectRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImportProject} />
         </div>
       </header>
 
-      {/* APP BODY */}
+      {error && (
+        <div className="error-banner">
+          <span>{error}</span>
+          <button className="btn" onClick={clearError}>Dismiss</button>
+        </div>
+      )}
+
+      <div className="shortcut-row">
+        <span>`Cmd/Ctrl+S` Save</span>
+        <span>`Cmd/Ctrl+N` New</span>
+        <span>`Cmd/Ctrl+O` Import</span>
+        <span>`Cmd/Ctrl+E` Toggle Export</span>
+        <span>`Cmd/Ctrl+R` Random Pairing</span>
+      </div>
+
       <div className="app">
         <Sidebar
           state={state}
           onUpdate={update}
-          onRandomPairing={randomPairing}
+          onRandomPairing={handleRandomPairing}
           onLoadFont={loadFont}
+          quality={quality}
         />
 
         <div className="preview-area">
-          {/* VIEW TABS */}
           <div className="view-tabs">
-            {VIEWS.map((v) => (
+            {VIEWS.map((view) => (
               <button
-                key={v.id}
-                className={`view-tab ${state.currentView === v.id ? "active" : ""}`}
-                onClick={() => update({ currentView: v.id })}
+                key={view.id}
+                className={`view-tab ${state.currentView === view.id ? "active" : ""}`}
+                onClick={() => update({ currentView: view.id })}
               >
-                {v.label}
+                {view.label}
               </button>
             ))}
+            <button className={`view-tab ${showExportPanel ? "active" : ""}`} onClick={() => setShowExportPanel((prev) => !prev)}>
+              Export
+            </button>
           </div>
 
-          {/* PREVIEW CANVAS */}
+          {showExportPanel && (
+            <div className="export-panel fade-in">
+              <div className="export-top">
+                <div className="toggle-row">
+                  {EXPORT_PROFILES.map((profile) => (
+                    <div
+                      key={profile.id}
+                      className={`toggle-option ${exportProfile === profile.id ? "active" : ""}`}
+                      onClick={() => setExportProfile(profile.id)}
+                    >
+                      {profile.label}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button className="btn" onClick={copyExport} disabled={hasExportError}>Copy</button>
+                  <button className="btn primary" onClick={downloadExport} disabled={hasExportError}>Download</button>
+                </div>
+              </div>
+              <div className="export-issues">
+                {exportIssues.length === 0 && <span className="contrast-badge"><span className="contrast-dot contrast-pass" />Ready for export</span>}
+                {exportIssues.map((issue) => (
+                  <span className="contrast-badge" key={`${issue.code}-${issue.message}`}>
+                    <span className={`contrast-dot ${issue.level === "error" ? "contrast-fail" : "contrast-warn"}`} />
+                    {issue.message}
+                  </span>
+                ))}
+              </div>
+              <textarea className="export-preview" value={exportPreview} readOnly />
+            </div>
+          )}
+
           <div className="preview-canvas">
             {state.currentView === "specimen" && <SpecimenPanel state={state} />}
             {state.currentView === "landing" && <LandingPanel state={state} />}
