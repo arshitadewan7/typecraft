@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ALL_FONTS, contrastRatio } from "@/lib/data";
 import { generateExport, validateProject } from "@/lib/exportEngine";
 import { useTypecraftStore } from "@/lib/useTypecraftStore";
@@ -48,6 +48,7 @@ export default function TypecraftApp() {
   const [exportProfile, setExportProfile] = useState<ExportProfile>("css-vars");
   const [showExportPanel, setShowExportPanel] = useState(false);
   const importProjectRef = useRef<HTMLInputElement>(null);
+  const previewCanvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -60,6 +61,15 @@ export default function TypecraftApp() {
     loadFont(headingFont);
     loadFont(bodyFont);
   };
+
+  const focusPreview = useCallback(() => {
+    const preview = previewCanvasRef.current;
+    if (!preview) return;
+    preview.scrollTo({ top: 0, behavior: "smooth" });
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      preview.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -219,6 +229,7 @@ export default function TypecraftApp() {
           onUpdate={update}
           onRandomPairing={handleRandomPairing}
           onLoadFont={loadFont}
+          onFocusPreview={focusPreview}
           quality={quality}
         />
 
@@ -270,7 +281,7 @@ export default function TypecraftApp() {
             </div>
           )}
 
-          <div className="preview-canvas">
+          <div className="preview-canvas" ref={previewCanvasRef}>
             {state.currentView === "specimen" && <SpecimenPanel state={state} />}
             {state.currentView === "landing" && <LandingPanel state={state} />}
             {state.currentView === "card" && <CardPanel state={state} />}

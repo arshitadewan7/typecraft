@@ -8,6 +8,7 @@ interface SidebarProps {
   onUpdate: (patch: Partial<TypographyState>) => void;
   onRandomPairing: () => void;
   onLoadFont: (name: string) => void;
+  onFocusPreview: () => void;
   quality: {
     contrastLabel: string;
     contrastClass: string;
@@ -17,7 +18,7 @@ interface SidebarProps {
   };
 }
 
-export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, quality }: SidebarProps) {
+export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, onFocusPreview, quality }: SidebarProps) {
   const [fontQuery, setFontQuery] = useState("");
 
   const fontCatalog = useMemo(() => {
@@ -61,12 +62,14 @@ export default function Sidebar({ state, onUpdate, onRandomPairing, onLoadFont, 
 
   const applyTheme = (theme: Theme) => {
     onUpdate({ theme });
+    onFocusPreview();
   };
 
   const applyCurated = (heading: string, body: string) => {
     onLoadFont(heading);
     onLoadFont(body);
     onUpdate({ headingFont: heading, bodyFont: body });
+    onFocusPreview();
   };
 
   const getFontMeta = (name: string) => {
