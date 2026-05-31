@@ -2,17 +2,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ALL_FONTS, contrastRatio } from "@/lib/data";
 import { generateExport, validateProject } from "@/lib/exportEngine";
+import { stateToProjectSnapshot } from "@/lib/projectAdapter";
 import { useTypecraftStore } from "@/lib/useTypecraftStore";
 import { useFontLoader } from "@/lib/useFontLoader";
 import type { ExportProfile } from "@/lib/types";
 import Sidebar from "@/components/Sidebar";
 import { SpecimenPanel, LandingPanel, CardPanel, CombosPanel } from "@/components/PreviewPanels";
+import SocialHub from "@/components/SocialHub";
 
 const VIEWS = [
   { id: "specimen", label: "Type Specimen" },
   { id: "landing", label: "Landing Page" },
   { id: "card", label: "Brand Card" },
   { id: "combos", label: "Color Combos" },
+  { id: "community", label: "Community" },
 ] as const;
 
 const EXPORT_PROFILES: Array<{ id: ExportProfile; label: string }> = [
@@ -103,6 +106,8 @@ export default function TypecraftApp() {
 
     return { contrastLabel, contrastClass, scaleLabel, scaleClass, warnings };
   }, [state]);
+
+  const currentSnapshot = useMemo(() => stateToProjectSnapshot(state), [state]);
 
   const exportIssues = useMemo(() => (currentProject ? validateProject(currentProject) : []), [currentProject]);
   const hasExportError = exportIssues.some((issue) => issue.level === "error");
@@ -275,6 +280,12 @@ export default function TypecraftApp() {
             {state.currentView === "landing" && <LandingPanel state={state} />}
             {state.currentView === "card" && <CardPanel state={state} />}
             {state.currentView === "combos" && <CombosPanel state={state} />}
+            {state.currentView === "community" && (
+              <SocialHub
+                currentSnapshot={currentSnapshot}
+                onApplyPairing={(snapshot) => update({ ...snapshot, currentView: "specimen" })}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import type { Theme } from "@/lib/data";
 
 export type ActiveSlot = "heading" | "body";
-export type CurrentView = "specimen" | "landing" | "card" | "combos";
+export type CurrentView = "specimen" | "landing" | "card" | "combos" | "community";
 export type SaveStatus = "saved" | "unsaved" | "autosaved";
 export type SchemaVersion = 1;
 
